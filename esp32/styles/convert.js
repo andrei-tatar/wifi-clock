@@ -2,6 +2,7 @@ const { loadImage, createCanvas } = require('canvas');
 const { argv } = require('process');
 const { join } = require('path');
 const { writeFile } = require('fs/promises');
+const { deflateRaw } = require('zlib');
 
 const INVERT = '--invert';
 
@@ -37,8 +38,8 @@ async function drawImage(index) {
     ctx.drawImage(image, WIDTH * index, 0, WIDTH, HEIGHT);
 }
 
-function get16bitImage(imageData, index) {
-    const image16bit = Buffer.alloc(WIDTH * HEIGHT * 2 + 3);
+async function getCompressedImage(imageData, index) {
+    const image16bit = Buffer.alloc(WIDTH * HEIGHT * 2);
     let offset = 0;
     let sum = { r: 0, g: 0, b: 0 };
     for (let y = 0; y < HEIGHT; y++) {
@@ -54,14 +55,29 @@ function get16bitImage(imageData, index) {
             offset = image16bit.writeUInt16BE(pixel16bit, offset);
         }
     }
+
     sum.r = sum.r / (WIDTH * HEIGHT) / 255.0;
     sum.g = sum.g / (WIDTH * HEIGHT) / 255.0;
     sum.b = sum.b / (WIDTH * HEIGHT) / 255.0;
     const color = getImageColor(sum);
-    offset = image16bit.writeUInt8(color.r, offset);
-    offset = image16bit.writeUInt8(color.g, offset);
-    offset = image16bit.writeUInt8(color.b, offset);
-    return image16bit;
+
+    const compressed = await new Promise((resolve, reject) => {
+        deflateRaw(image16bit, { level: 9 }, (err, result) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        })
+    });
+
+    const compressedImage = Buffer.alloc(compressed.length + 3);
+    offset = 0;
+    offset = compressedImage.writeUInt8(color.r, offset);
+    offset = compressedImage.writeUInt8(color.g, offset);
+    offset = compressedImage.writeUInt8(color.b, offset);
+    compressed.copy(compressedImage, offset);
+    return compressedImage;
 }
 
 function applyInvert(v, invert) {
@@ -93,9 +109,9 @@ async function exportImages() {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const writePromises = [];
     for (let i = 0; i < COUNT; i++) {
-        const image16bit = get16bitImage(imageData, i);
+        const image = await getCompressedImage(imageData, i);
         const outputImage = join(__dirname, '..', 'data', 'nix', `${i}.clk`);
-        writePromises.push(writeFile(outputImage, image16bit));
+        writePromises.push(writeFile(outputImage, image));
     }
 
     await Promise.all(writePromises);

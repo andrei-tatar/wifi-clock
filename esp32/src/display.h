@@ -6,12 +6,14 @@
 
 #define SELECT_NONE 0x81
 #define SELECT_ALL 0x80
+#define MAX_UPDATES 2
 
 typedef void (*OnDigitColorChanged)(uint8_t digit, uint32_t color);
 
 typedef struct
 {
-    uint16_t buffer[TFT_WIDTH * TFT_HEIGHT];
+    uint8_t *buffer;
+    size_t bufferSize;
     uint8_t selectLcds;
     uint32_t color;
 } LcdUpdate;
@@ -30,6 +32,7 @@ private:
 
     TFT_eSPI tft;
     OnDigitColorChanged colorChanged;
+    LcdUpdate updates[MAX_UPDATES];
 };
 
 #endif

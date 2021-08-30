@@ -6,10 +6,12 @@
 #include "display.h"
 #include "hal.h"
 #include "clock.h"
+#include "web.h"
 
 Display display;
 WifiClock wificlock(display);
 Adafruit_NeoPixel neo(6, BACKLIGHT_PIN, NEO_GRB + NEO_KHZ800);
+Web web(SPIFFS);
 
 void onDigitColorChanged(uint8_t digit, uint32_t color)
 {
@@ -30,6 +32,7 @@ void setup()
   display.onDigitColorChanged(onDigitColorChanged);
   display.begin();
   wificlock.begin();
+  web.begin();
 }
 
 void loop()

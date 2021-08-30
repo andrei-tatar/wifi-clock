@@ -1,6 +1,7 @@
 #include "display.h"
 #include "hal.h"
 #include <SPIFFS.h>
+#include "rom/miniz.h"
 
 void Display::begin()
 {
@@ -17,7 +18,6 @@ void Display::begin()
     selectLcd(SELECT_ALL);
 
     tft.begin();
-    tft.initDMA();
     tft.fillScreen(TFT_BLACK);
 }
 
@@ -51,10 +51,6 @@ void Display::drawTime(uint32_t time)
 {
     static uint8_t lastDigits[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
     uint8_t digits[6];
-
-#define MAX_UPDATES 2
-
-    LcdUpdate *updates[MAX_UPDATES] = {NULL};
     uint8_t updateIndex = 0;
 
     for (uint8_t i = 0; i < 6; i++)
@@ -78,24 +74,8 @@ void Display::drawTime(uint32_t time)
 
         if (selectLcds)
         {
-            if (updates[updateIndex] == NULL)
-                updates[updateIndex] = (LcdUpdate *)malloc(sizeof(LcdUpdate));
-
-            if (updates[updateIndex] == NULL)
-            {
-                if (updateIndex == 0)
-                {
-                    //could not alloc on first update, nothing else to do...
-                    return;
-                }
-
-                //execute previous update
-                updateIndex--;
-                executeUpdate(*updates[updateIndex]);
-            }
-
-            loadUpdate(digit, *updates[updateIndex]);
-            updates[updateIndex]->selectLcds = selectLcds;
+            loadUpdate(digit, updates[updateIndex]);
+            updates[updateIndex].selectLcds = selectLcds;
             updateIndex++;
         }
 
@@ -104,16 +84,11 @@ void Display::drawTime(uint32_t time)
         {
             for (uint8_t i = 0; i < updateIndex; i++)
             {
-                executeUpdate(*updates[i]);
+                executeUpdate(updates[i]);
             }
             updateIndex = 0;
         }
     }
-
-    if (updates[0] != NULL)
-        free(updates[0]);
-    if (updates[1] != NULL)
-        free(updates[1]);
 }
 
 void Display::loadUpdate(uint8_t digit, LcdUpdate &update)
@@ -122,18 +97,58 @@ void Display::loadUpdate(uint8_t digit, LcdUpdate &update)
     snprintf(path, 32, "/nix/%d.clk", digit);
 
     auto file = SPIFFS.open(path, "r");
-    file.readBytes((char *)update.buffer, TFT_WIDTH * TFT_HEIGHT * 2);
+    update.bufferSize = file.size() - 3;
+    update.buffer = (uint8_t *)malloc(update.bufferSize);
     uint8_t rgb[3];
+
     file.readBytes((char *)rgb, 3);
-    update.color = rgb[0] << 16 | rgb[1] << 8 | rgb[2];
+    file.readBytes((char *)update.buffer, update.bufferSize);
     file.close();
+
+    update.color = rgb[0] << 16 | rgb[1] << 8 | rgb[2];
 }
 
 void Display::executeUpdate(LcdUpdate &update)
 {
-    tft.dmaWait();
+    static tinfl_decompressor inflator;
+    tinfl_init(&inflator);
+
+#define OUT_BUF_SIZE 32768
+
+    static uint8_t out_buf[OUT_BUF_SIZE];
+    uint8_t *next_out = out_buf;
+    int status = TINFL_STATUS_NEEDS_MORE_INPUT;
+
+    uint8_t *data_buf = update.buffer;
+    size_t remaining_compressed = update.bufferSize;
+
     selectLcd(update.selectLcds);
-    tft.pushImageDMA(0, 0, TFT_WIDTH, TFT_HEIGHT, update.buffer);
+    tft.setAddrWindow(0, 0, TFT_WIDTH, TFT_HEIGHT);
+
+    while (remaining_compressed > 0 && status > TINFL_STATUS_DONE)
+    {
+        size_t in_bytes = remaining_compressed;
+        size_t out_bytes = out_buf + OUT_BUF_SIZE - next_out;
+
+        int flags = remaining_compressed > in_bytes ? TINFL_FLAG_HAS_MORE_INPUT : 0;
+        status = tinfl_decompress(&inflator, data_buf, &in_bytes,
+                                  out_buf, next_out, &out_bytes,
+                                  flags);
+
+        remaining_compressed -= in_bytes;
+        data_buf += in_bytes;
+
+        next_out += out_bytes;
+        size_t bytes_in_out_buf = next_out - out_buf;
+        if (status == TINFL_STATUS_DONE || bytes_in_out_buf == OUT_BUF_SIZE)
+        {
+            tft.pushPixels((uint16_t *)out_buf, bytes_in_out_buf / 2);
+            next_out = out_buf;
+        }
+    }
+
     if (colorChanged != NULL)
         colorChanged(update.selectLcds, update.color);
+
+    free(update.buffer);
 }

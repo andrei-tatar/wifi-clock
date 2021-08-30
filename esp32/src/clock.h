@@ -16,6 +16,7 @@ class WifiClock
 public:
     WifiClock(Display &display);
     void begin();
+    void loop();
 
 private:
     void sync();

@@ -1,0 +1,30 @@
+{
+    "ntp": {
+        "enable": true,
+        "server": "pool.ntp.org",
+        "updateInterval": 3600
+    },
+    "timezone": {
+        "offset": 120,
+        "dstEnable": true,
+        "dstStart": {
+            "abbrev": "EEST",
+            "week": 0,
+            "dow": 1,
+            "month": 3,
+            "hour": 2,
+            "offset": 180
+        },
+        "dstEnd": {
+            "abbrev": "EET",
+            "week": 0,
+            "dow": 1,
+            "month": 10,
+            "hour": 3,
+            "offset": 120
+        }
+    },
+    "led": {
+        "brightness": 255
+    }
+}

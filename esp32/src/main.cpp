@@ -9,7 +9,7 @@
 #include "web.h"
 
 Display display;
-WifiClock wificlock(display);
+WifiClock wificlock(display, SPIFFS);
 Adafruit_NeoPixel neo(6, BACKLIGHT_PIN, NEO_GRB + NEO_KHZ800);
 Web web(SPIFFS);
 

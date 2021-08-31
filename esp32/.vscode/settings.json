@@ -46,6 +46,7 @@
         "random": "cpp",
         "port.h": "c",
         "types.h": "c",
-        "platform.h": "c"
+        "platform.h": "c",
+        "string_view": "cpp"
     }
 }

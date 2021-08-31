@@ -23,6 +23,11 @@ void onDigitColorChanged(uint8_t digit, uint32_t color)
   neo.show();
 }
 
+void onConfigurationChanged()
+{
+  wificlock.loadConfig();
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -31,6 +36,7 @@ void setup()
   neo.begin();
   display.onDigitColorChanged(onDigitColorChanged);
   display.begin();
+  web.onConfigurationChanged(onConfigurationChanged);
   wificlock.begin();
   web.begin();
 }

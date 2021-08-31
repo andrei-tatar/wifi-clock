@@ -22,6 +22,11 @@ void Web::begin()
     server.begin();
 }
 
+void Web::onConfigurationChanged(OnConfigurationChanged handler)
+{
+    configurationChangedHandler = handler;
+}
+
 void Web::handleNotFound(AsyncWebServerRequest *req)
 {
     req->send(404, "Not found");
@@ -74,6 +79,10 @@ void Web::updateConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len
     {
         request->_tempFile.close();
         request->send(204);
+
+        if (configurationChangedHandler) {
+            configurationChangedHandler();
+        }
     }
 }
 

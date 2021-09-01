@@ -5,14 +5,15 @@
 #include <Arduino.h>
 #include <FS.h>
 
-typedef void (*OnConfigurationChanged)();
+typedef void (*ChangedHandler)();
 
 class Web
 {
 public:
     Web(FS &fs);
     void begin();
-    void onConfigurationChanged(OnConfigurationChanged handler);
+    void onConfigurationChanged(ChangedHandler handler);
+    void onDigitsChanged(ChangedHandler handler);
 
 private:
     void getInfo(AsyncWebServerRequest *req);
@@ -20,8 +21,9 @@ private:
     void getConfig(AsyncWebServerRequest *req);
     void updateConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total);
     void handleNotFound(AsyncWebServerRequest *req);
+    void uploadFile(AsyncWebServerRequest *req, uint8_t *data, size_t len, size_t index, size_t total);
 
-    OnConfigurationChanged configurationChangedHandler;
+    ChangedHandler configurationChangedHandler, digitsChangedHandler;
     String wifiStatusToString();
     AsyncWebServer server;
     FS &fs;

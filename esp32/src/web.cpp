@@ -16,15 +16,22 @@ void Web::begin()
     server.on("/api/info", HTTP_GET, bind(&Web::getInfo, this, _1));
     server.on("/api/config", HTTP_GET, bind(&Web::getConfig, this, _1));
     server.on("/api/config", HTTP_POST, NO_OP_REQ, NULL, bind(&Web::updateConfig, this, _1, _2, _3, _4, _5));
+    server.on("/api/file/*", HTTP_POST, NO_OP_REQ, NULL, bind(&Web::uploadFile, this, _1, _2, _3, _4, _5));
+
     server.serveStatic("/", fs, "/public", "public,max-age=3600,immutable")
         .setDefaultFile("index.html");
     server.onNotFound(bind(&Web::handleNotFound, this, _1));
     server.begin();
 }
 
-void Web::onConfigurationChanged(OnConfigurationChanged handler)
+void Web::onConfigurationChanged(ChangedHandler handler)
 {
     configurationChangedHandler = handler;
+}
+
+void Web::onDigitsChanged(ChangedHandler handler)
+{
+    digitsChangedHandler = handler;
 }
 
 void Web::handleNotFound(AsyncWebServerRequest *req)
@@ -66,22 +73,47 @@ void Web::getConfig(AsyncWebServerRequest *req)
     req->send(fs, "/config.json");
 }
 
-void Web::updateConfig(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+void Web::updateConfig(AsyncWebServerRequest *req, uint8_t *data, size_t len, size_t index, size_t total)
 {
     if (!index)
     {
-        request->_tempFile = fs.open("/config.json", "w");
+        req->_tempFile = fs.open("/config.json", "w");
     }
 
-    request->_tempFile.write(data, len);
+    req->_tempFile.write(data, len);
 
     if (index + len == total)
     {
-        request->_tempFile.close();
-        request->send(204);
+        req->send(204);
 
-        if (configurationChangedHandler) {
+        if (configurationChangedHandler)
+        {
             configurationChangedHandler();
+        }
+    }
+}
+
+void Web::uploadFile(AsyncWebServerRequest *req, uint8_t *data, size_t len, size_t index, size_t total)
+{
+    if (!index)
+    {
+        String fileName = req->url().substring(10);
+        String path = "/nix/" + fileName + ".clk";
+        req->_tempFile = fs.open(path, "w");
+        req->_tempObject = (void *)(fileName.equals("9") ? 1 : NULL);
+    }
+
+    req->_tempFile.write(data, len);
+
+    if (index + len == total)
+    {
+        req->send(204);
+
+        if (req->_tempObject)
+        {
+            if (digitsChangedHandler)
+                digitsChangedHandler();
+            req->_tempObject = NULL; // the server tries to free the memory, but we use it as a flag
         }
     }
 }

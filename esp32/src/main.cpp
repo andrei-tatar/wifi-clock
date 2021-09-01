@@ -28,6 +28,11 @@ void onConfigurationChanged()
   wificlock.loadConfig();
 }
 
+void onDigitsChanged()
+{
+  display.invalidateDigitCache();
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -37,6 +42,7 @@ void setup()
   display.onDigitColorChanged(onDigitColorChanged);
   display.begin();
   web.onConfigurationChanged(onConfigurationChanged);
+  web.onDigitsChanged(onDigitsChanged);
   wificlock.begin();
   web.begin();
 }

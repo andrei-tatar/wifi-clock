@@ -24,6 +24,7 @@ public:
     void begin();
     void drawTime(uint32_t time);
     void onDigitColorChanged(OnDigitColorChanged colorChanged);
+    void invalidateDigitCache();
 
 private:
     void selectLcd(uint8_t index);
@@ -33,6 +34,7 @@ private:
     TFT_eSPI tft;
     OnDigitColorChanged colorChanged;
     LcdUpdate updates[MAX_UPDATES];
+    uint8_t lastDigits[6];
 };
 
 #endif

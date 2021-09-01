@@ -19,6 +19,12 @@ void Display::begin()
 
     tft.begin();
     tft.fillScreen(TFT_BLACK);
+    invalidateDigitCache();
+}
+
+void Display::invalidateDigitCache()
+{
+    memset(lastDigits, 0xFF, 6);
 }
 
 void Display::onDigitColorChanged(OnDigitColorChanged colorChanged)
@@ -49,7 +55,6 @@ void Display::selectLcd(uint8_t mask)
 
 void Display::drawTime(uint32_t time)
 {
-    static uint8_t lastDigits[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
     uint8_t digits[6];
     uint8_t updateIndex = 0;
 

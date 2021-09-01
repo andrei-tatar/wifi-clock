@@ -21,7 +21,7 @@ void WifiClock::begin()
                  { clockInstance->sync(); },
                  SYSTEM_EVENT_STA_GOT_IP);
 
-    displayTime.attach(1, []
+    displayTime.attach(.2, []
                        { clockInstance->updateDisplay(); });
 
     setSyncProvider([]
@@ -45,8 +45,14 @@ void WifiClock::updateDisplay()
     auto localTime = timezone.toLocal(now());
     tmElements_t timeElements;
     breakTime(localTime, timeElements);
-    auto time = timeElements.Hour * 10000 + timeElements.Minute * 100 + timeElements.Second;
-    display.drawTime(time);
+
+    static uint8_t lastSecond = 0xFF;
+    if (timeElements.Second != lastSecond)
+    {
+        lastSecond = timeElements.Second;
+        auto time = timeElements.Hour * 10000 + timeElements.Minute * 100 + timeElements.Second;
+        display.drawTime(time);
+    }
 }
 
 void WifiClock::loadConfig()

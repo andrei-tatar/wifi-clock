@@ -85,6 +85,7 @@ void Web::updateConfig(AsyncWebServerRequest *req, uint8_t *data, size_t len, si
     if (index + len == total)
     {
         req->send(204);
+        req->_tempFile.close();
 
         if (configurationChangedHandler)
         {

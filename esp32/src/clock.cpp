@@ -71,7 +71,7 @@ void WifiClock::loadConfig()
     DynamicJsonBuffer jsonBuffer;
     JsonObject &root = jsonBuffer.parseObject(json);
     JsonObject &ntp = root["ntp"];
-    _ntpEnabled = ntp["enabled"];
+    _ntpEnabled = ntp["enable"];
     if (_ntpEnabled)
     {
         static String ntpServer = ntp["server"];

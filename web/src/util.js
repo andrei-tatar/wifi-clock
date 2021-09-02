@@ -3,7 +3,7 @@ import { deflateRaw } from 'https://unpkg.com/pako@2.0.4/dist/pako.esm.mjs?modul
 export const WIDTH = 135;
 export const HEIGHT = 240;
 
-export function loadImage(path, digit, ctx) {
+export function drawImage(path, digit, ctx) {
     return new Promise((resolve, reject) => {
         const img = document.createElement('img');
         img.onload = () => {
@@ -63,20 +63,27 @@ function exportImage(imageData, index) {
     return file;
 }
 
-function getOffset(digit) {
+export function getDigit({ x, y }) {
+    if (x < 0 || x > 5 * WIDTH || y < 0 || y > 2 * HEIGHT) return -1;
+    const column = Math.floor(x / WIDTH);
+    const row = Math.floor(y / HEIGHT);
+    return row * 5 + column;
+}
+
+export function getOffset(digit) {
     return {
         x: (digit % 5) * WIDTH,
         y: Math.floor(digit / 5) * HEIGHT,
     };
 }
 
-function rgb2hsv(r, g, b) {
+export function rgb2hsv(r, g, b) {
     let v = Math.max(r, g, b), c = v - Math.min(r, g, b);
     let h = c && ((v == r) ? (g - b) / c : ((v == g) ? 2 + (b - r) / c : 4 + (r - g) / c));
     return [60 * (h < 0 ? h + 6 : h), v && c / v, v];
 }
 
-function hsv2rgb(h, s, v) {
+export function hsv2rgb(h, s, v) {
     let f = (n, k = (n + h / 60) % 6) => v - v * s * Math.max(Math.min(k, 4 - k, 1), 0);
     return [f(5), f(3), f(1)];
 }

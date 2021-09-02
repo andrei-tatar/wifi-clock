@@ -38,7 +38,7 @@ class Collapsible extends LitElement {
 
     static get properties() {
         return {
-            title: { type: String },
+            header: { type: String },
             collapsed: { type: Boolean },
         }
     }
@@ -57,14 +57,14 @@ class Collapsible extends LitElement {
 
             setTimeout(() => {
                 this.height = 0;
-                this.requestUpdate('height');
+                this.requestUpdate();
             });
         } else {
             this.collapsed = false;
             this.height = `${wrapper.clientHeight}px`;
             setTimeout(() => {
                 this.height = null;
-                this.requestUpdate('height');
+                this.requestUpdate();
             }, 300);
         }
 
@@ -77,7 +77,7 @@ class Collapsible extends LitElement {
     render() {
         return html`
         <div @click="${this.toggleCollapse}" class="title">
-            ${this.title}
+            ${this.header}
         </div>
         <div style=${styleMap({ height: this.height })} class=${classMap({ content: true, collapsed: this.collapsed })} >
             <div id="wrapper">

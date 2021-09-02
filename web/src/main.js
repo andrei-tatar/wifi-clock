@@ -20,7 +20,7 @@ class App extends LitElement {
 
     constructor() {
         super();
-        this.addEventListener('expanded', (ev, ...args) => {
+        this.addEventListener('expanded', (ev) => {
             const collapsibles = this.shadowRoot.querySelectorAll('clock-collapsible');
             const srcElement = ev.path[0];
             for (const c of collapsibles) {
@@ -34,11 +34,17 @@ class App extends LitElement {
     render() {
         return html`
         <h1>WiFi Clock</h1>
-        <clock-collapsible title="Wi-Fi">
+        <clock-collapsible header="Wi-Fi">
             TODO: Wifi-Status and settings
         </clock-collapsible>
-        <clock-collapsible title="Skins">
+        <clock-collapsible header="Skins">
             <clock-skins></clock-skins>
+        </clock-collapsible>
+        <clock-collapsible header="LED">
+        </clock-collapsible>
+        <clock-collapsible header="Network Sync">
+        </clock-collapsible>
+        <clock-collapsible header="Timezone">
         </clock-collapsible>`;
     }
 }

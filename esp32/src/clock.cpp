@@ -16,6 +16,7 @@ WifiClock::WifiClock(Display &display, FS &fs)
 void WifiClock::begin()
 {
     clockInstance = this;
+    loadConfig(true);
 
     WiFi.onEvent([](system_event_t *sys_event, wifi_prov_event_t *prov_event)
                  { clockInstance->sync(); },
@@ -26,8 +27,6 @@ void WifiClock::begin()
 
     setSyncProvider([]
                     { return RTC.get(); });
-
-    loadConfig();
 }
 
 void WifiClock::sync()
@@ -55,7 +54,7 @@ void WifiClock::updateDisplay()
     }
 }
 
-void WifiClock::loadConfig()
+void WifiClock::loadConfig(bool first)
 {
     if (!fs.exists("/config.json"))
     {
@@ -79,7 +78,11 @@ void WifiClock::loadConfig()
         int updateInterval = ntp["updateInterval"];
         updateTime.attach(updateInterval, []
                           { clockInstance->sync(); });
-        sync();
+
+        if (!first)
+        {
+            sync();
+        }
     }
     else
     {
@@ -102,7 +105,10 @@ void WifiClock::loadConfig()
         timezone.setRules(start, end);
     }
 
-    updateDisplay();
+    if (!first)
+    {
+        updateDisplay();
+    }
 }
 
 void WifiClock::parseTimezoneRule(JsonObject &root, TimeChangeRule &rule)

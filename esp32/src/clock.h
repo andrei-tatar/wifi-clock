@@ -19,7 +19,7 @@ public:
     WifiClock(Display &display, FS &fs);
     void begin();
     void loop();
-    void loadConfig();
+    void loadConfig(bool first = false);
 
 private:
     void sync();

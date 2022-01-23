@@ -15,6 +15,7 @@ void Web::begin()
     server.on("/api/reboot", HTTP_POST, bind(&Web::reboot, this, _1));
     server.on("/api/info", HTTP_GET, bind(&Web::getInfo, this, _1));
     server.on("/api/config", HTTP_GET, bind(&Web::getConfig, this, _1));
+    server.on("/api/wifi", HTTP_GET, bind(&Web::getWifi, this, _1));
     server.on("/api/config", HTTP_POST, NO_OP_REQ, NULL, bind(&Web::updateConfig, this, _1, _2, _3, _4, _5));
     server.on("/api/file/*", HTTP_POST, NO_OP_REQ, NULL, bind(&Web::uploadFile, this, _1, _2, _3, _4, _5));
 
@@ -71,6 +72,38 @@ void Web::getInfo(AsyncWebServerRequest *req)
 void Web::getConfig(AsyncWebServerRequest *req)
 {
     req->send(fs, "/config.json");
+}
+
+void Web::getWifi(AsyncWebServerRequest *req)
+{
+    DynamicJsonBuffer jsonBuffer;
+
+    JsonArray &networks = jsonBuffer.createArray();
+    int n = WiFi.scanComplete();
+    if (n == -2)
+    {
+        WiFi.scanNetworks(true);
+    }
+    else if (n)
+    {
+        for (int i = 0; i < n; ++i)
+        {
+            JsonObject &network = networks.createNestedObject();
+            network["rssi"] = WiFi.RSSI(i);
+            network["ssid"] = WiFi.SSID(i);
+            network["bssid"] = WiFi.BSSIDstr(i);
+            network["channel"] = WiFi.channel(i);
+            network["secure"] = WiFi.encryptionType(i);
+        }
+        WiFi.scanDelete();
+        if (WiFi.scanComplete() == -2)
+        {
+            WiFi.scanNetworks(true);
+        }
+    }
+    String serialized;
+    networks.printTo(serialized);
+    req->send(200, "application/json", serialized);
 }
 
 void Web::updateConfig(AsyncWebServerRequest *req, uint8_t *data, size_t len, size_t index, size_t total)

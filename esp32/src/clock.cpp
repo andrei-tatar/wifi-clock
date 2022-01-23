@@ -31,7 +31,7 @@ void WifiClock::begin()
 
 void WifiClock::sync()
 {
-    if (_ntpEnabled && timeClient.update())
+    if (_ntpEnabled && WiFi.status() == WL_CONNECTED && timeClient.update())
     {
         auto ntpTime = timeClient.getEpochTime();
         RTC.set(ntpTime);

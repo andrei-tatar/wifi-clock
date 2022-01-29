@@ -4,15 +4,15 @@
 #include <ESPAsyncWebServer.h>
 #include <Arduino.h>
 #include <FS.h>
+#include "clock.h"
 
 typedef void (*ChangedHandler)();
 
 class Web
 {
 public:
-    Web(FS &fs);
+    Web(FS &fs, WifiClock &clock);
     void begin();
-    void onConfigurationChanged(ChangedHandler handler);
     void onDigitsChanged(ChangedHandler handler);
 
 private:
@@ -24,10 +24,11 @@ private:
     void handleNotFound(AsyncWebServerRequest *req);
     void uploadFile(AsyncWebServerRequest *req, uint8_t *data, size_t len, size_t index, size_t total);
 
-    ChangedHandler configurationChangedHandler, digitsChangedHandler;
+    ChangedHandler digitsChangedHandler;
     String wifiStatusToString();
     AsyncWebServer server;
     FS &fs;
+    WifiClock &clock;
 };
 
 #endif

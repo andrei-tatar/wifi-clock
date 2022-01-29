@@ -6,7 +6,7 @@ using namespace std::placeholders;
 
 void NO_OP_REQ(AsyncWebServerRequest *req) {}
 
-Web::Web(FS &fs) : server(80), fs(fs)
+Web::Web(FS &fs, WifiClock &clock) : server(80), fs(fs), clock(clock)
 {
 }
 
@@ -23,11 +23,6 @@ void Web::begin()
         .setDefaultFile("index.html");
     server.onNotFound(bind(&Web::handleNotFound, this, _1));
     server.begin();
-}
-
-void Web::onConfigurationChanged(ChangedHandler handler)
-{
-    configurationChangedHandler = handler;
 }
 
 void Web::onDigitsChanged(ChangedHandler handler)
@@ -63,6 +58,12 @@ void Web::getInfo(AsyncWebServerRequest *req)
     wifi["status"] = wifiStatusToString();
     wifi["rssi"] = WiFi.RSSI();
     wifi["bssid"] = WiFi.BSSIDstr();
+
+    JsonObject &time = root.createNestedObject("time");
+    time["utc"] = clock.getTime();
+    time["rtc"] = clock.getRtcTime();
+    time["ntp"] = clock.getNtpTime();
+    time["local"] = clock.getLocalTime();
 
     String serialized;
     root.printTo(serialized);
@@ -120,10 +121,7 @@ void Web::updateConfig(AsyncWebServerRequest *req, uint8_t *data, size_t len, si
         req->send(204);
         req->_tempFile.close();
 
-        if (configurationChangedHandler)
-        {
-            configurationChangedHandler();
-        }
+        clock.loadConfig();
     }
 }
 

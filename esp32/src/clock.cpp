@@ -41,7 +41,7 @@ void WifiClock::sync()
 
 void WifiClock::updateDisplay()
 {
-    auto localTime = timezone.toLocal(now());
+    auto localTime = getLocalTime();
     tmElements_t timeElements;
     breakTime(localTime, timeElements);
 

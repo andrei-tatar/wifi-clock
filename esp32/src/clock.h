@@ -20,6 +20,22 @@ public:
     void begin();
     void loop();
     void loadConfig(bool first = false);
+    inline time_t getLocalTime()
+    {
+        return timezone.toLocal(now());
+    }
+    inline time_t getRtcTime()
+    {
+        return RTC.get();
+    }
+    inline time_t getNtpTime()
+    {
+        return timeClient.getEpochTime();
+    }
+    inline time_t getTime()
+    {
+        return now();
+    }
 
 private:
     void sync();

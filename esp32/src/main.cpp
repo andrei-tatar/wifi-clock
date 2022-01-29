@@ -11,7 +11,7 @@
 Display display;
 WifiClock wificlock(display, SPIFFS);
 Adafruit_NeoPixel neo(6, BACKLIGHT_PIN, NEO_GRB + NEO_KHZ800);
-Web web(SPIFFS);
+Web web(SPIFFS, wificlock);
 
 void onDigitColorChanged(uint8_t digit, uint32_t color)
 {
@@ -21,11 +21,6 @@ void onDigitColorChanged(uint8_t digit, uint32_t color)
       neo.setPixelColor(i, color);
   }
   neo.show();
-}
-
-void onConfigurationChanged()
-{
-  wificlock.loadConfig();
 }
 
 void onDigitsChanged()
@@ -41,7 +36,6 @@ void setup()
   neo.begin();
   display.onDigitColorChanged(onDigitColorChanged);
   display.begin();
-  web.onConfigurationChanged(onConfigurationChanged);
   web.onDigitsChanged(onDigitsChanged);
   wificlock.begin();
   web.begin();

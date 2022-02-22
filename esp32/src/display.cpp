@@ -1,7 +1,10 @@
 #include "display.h"
 #include "hal.h"
-#include <SPIFFS.h>
 #include "rom/miniz.h"
+
+Display::Display(FS &fs) : fs(fs)
+{
+}
 
 void Display::begin()
 {
@@ -84,8 +87,8 @@ void Display::drawTime(uint32_t time)
             updateIndex++;
         }
 
-        if (updateIndex == MAX_UPDATES || //if we can't hold any more updates in memory
-            (digit == 9 && updateIndex))  //or we got to the last digit and we have pending updates
+        if (updateIndex == MAX_UPDATES || // if we can't hold any more updates in memory
+            (digit == 9 && updateIndex))  // or we got to the last digit and we have pending updates
         {
             for (uint8_t i = 0; i < updateIndex; i++)
             {
@@ -101,7 +104,7 @@ void Display::loadUpdate(uint8_t digit, LcdUpdate &update)
     char path[32];
     snprintf(path, 32, "/nix/%d.clk", digit);
 
-    auto file = SPIFFS.open(path, "r");
+    auto file = fs.open(path, "r");
     update.bufferSize = file.size() - 3;
     update.buffer = (uint8_t *)malloc(update.bufferSize);
     uint8_t rgb[3];

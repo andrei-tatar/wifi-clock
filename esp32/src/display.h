@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <TFT_eSPI.h>
+#include <FS.h>
 
 #define SELECT_NONE 0x81
 #define SELECT_ALL 0x80
@@ -21,6 +22,7 @@ typedef struct
 class Display
 {
 public:
+    Display(FS &fs);
     void begin();
     void drawTime(uint32_t time);
     void onDigitColorChanged(OnDigitColorChanged colorChanged);
@@ -31,6 +33,7 @@ private:
     void loadUpdate(uint8_t digit, LcdUpdate &update);
     void executeUpdate(LcdUpdate &update);
 
+    FS &fs;
     TFT_eSPI tft;
     OnDigitColorChanged colorChanged;
     LcdUpdate updates[MAX_UPDATES];

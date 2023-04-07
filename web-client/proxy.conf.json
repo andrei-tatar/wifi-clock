@@ -1,0 +1,6 @@
+{
+  "/api": {
+    "target": "http://wifi-clock.local",
+    "secure": false
+  }
+}

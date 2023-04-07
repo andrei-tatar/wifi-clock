@@ -1,0 +1,40 @@
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.skin-canvas {
+  background-image: linear-gradient(45deg, #bbb 25%, transparent 25%),
+    linear-gradient(-45deg, #bbb 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #bbb 75%),
+    linear-gradient(-45deg, transparent 75%, #bbb 75%);
+  background-size: 40px 40px;
+  background-position: 0px 0px, 0px 20px, 20px -20px, -20px 0px;
+}
+
+.edit-canvas {
+  position: absolute;
+  width: 100%;
+  left: 0;
+}
+
+.adorner {
+  box-sizing: border-box;
+  position: absolute;
+  border: 3px dashed lightgray;
+  transition-property: transform, opacity;
+  transition-duration: 0.2s;
+  width: 20%;
+  height: 50%;
+
+  &.selected {
+    transition: none;
+    border-color: red;
+  }
+}

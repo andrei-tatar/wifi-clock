@@ -1,0 +1,40 @@
+<mat-form-field>
+  <mat-label>Load skin</mat-label>
+  <mat-select
+    [value]="selectedSkin | async"
+    (valueChange)="selectedSkin.next($event)"
+  >
+    <mat-option *ngFor="let skin of skins" [value]="skin.index">
+      {{ skin.label }}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+<div
+  class="editor-container"
+  (mousemove)="onMouseMove($event)"
+  (mouseleave)="onMouseLeave()"
+  (click)="selectCurrentDigit()"
+>
+  <canvas
+    class="skin-canvas"
+    #canvas
+    [width]="canvasWidth"
+    [height]="canvasHeight"
+  >
+  </canvas>
+  <canvas
+    class="edit-canvas"
+    #editCanvas
+    [width]="canvasWidth"
+    [height]="canvasHeight"
+  >
+  </canvas>
+  <div class="adorner" [style]="hoverDigit | adornerStyle | async"></div>
+  <div
+    class="adorner selected"
+    [style]="selectedDigit | adornerStyle: true | async"
+  ></div>
+</div>
+
+<button mat-button color="primary" (click)="uploadImages()">Upload</button>

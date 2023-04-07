@@ -1,0 +1,29 @@
+<mat-toolbar color="primary">
+  <mat-toolbar-row> Wi-Fi Clock </mat-toolbar-row>
+</mat-toolbar>
+<div class="container">
+  <mat-accordion>
+    <mat-expansion-panel (expandedChange)="wifiSettingsExpanded$.next($event)">
+      <mat-expansion-panel-header>
+        <mat-panel-title> Wi-Fi Settings </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div>
+        <app-wifi-settings> </app-wifi-settings>
+      </div>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title> NTP </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div>TODO</div>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title> Skins </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div>
+        <app-skin-editor></app-skin-editor>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

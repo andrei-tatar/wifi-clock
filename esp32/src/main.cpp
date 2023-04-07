@@ -1,12 +1,12 @@
-#include <Arduino.h>
-#include <WiFi.h>
 #include <Adafruit_NeoPixel.h>
+#include <Arduino.h>
 #include <ESPmDNS.h>
 #include <SPIFFS.h>
+#include <WiFi.h>
 
+#include "clock.h"
 #include "display.h"
 #include "hal.h"
-#include "clock.h"
 #include "web.h"
 
 #define USE_FS SPIFFS
@@ -16,29 +16,27 @@ WifiClock wificlock(display, USE_FS);
 Adafruit_NeoPixel neo(6, BACKLIGHT_PIN, NEO_GRB + NEO_KHZ800);
 Web web(USE_FS, wificlock);
 
-void onDigitColorChanged(uint8_t digit, uint32_t color)
-{
-  for (uint8_t i = 0; i < 6; i++)
-  {
+void onDigitColorChanged(uint8_t digit, uint32_t color) {
+  for (uint8_t i = 0; i < 6; i++) {
     if (digit & (1 << i))
       neo.setPixelColor(i, color);
   }
   neo.show();
 }
 
-void onDigitsChanged()
-{
-  display.invalidateDigitCache();
-}
+void onDigitsChanged() { display.invalidateDigitCache(); }
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
 
-  MDNS.begin("wifi-clock");
-  MDNS.addService("http", "tcp", 80);
-
+  WiFi.mode(WIFI_STA);
+  WiFi.setSleep(true);
   WiFi.begin();
+
+  MDNS.begin("wifi-clock");
+  MDNS.addService("wifi-clock", "http", 80);
+  MDNS.enableArduino();
+
   USE_FS.begin();
   neo.begin();
   display.onDigitColorChanged(onDigitColorChanged);
@@ -48,6 +46,4 @@ void setup()
   web.begin();
 }
 
-void loop()
-{
-}
+void loop() {}

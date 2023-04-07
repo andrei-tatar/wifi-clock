@@ -1,0 +1,31 @@
+@use "@angular/material" as mat;
+
+@include mat.core();
+
+$primary: mat.define-palette(mat.$indigo-palette);
+$accent: mat.define-palette(mat.$lime-palette);
+
+$theme: mat.define-dark-theme(
+  (
+    color: (
+      primary: $primary,
+      accent: $accent,
+    ),
+  )
+);
+
+@include mat.all-component-themes($theme);
+// @include mat.toolbar-theme($theme);
+// @include mat.expansion-theme($theme);
+// @include mat.button-theme($theme);
+// @include mat.divider-theme($theme);
+// @include mat.select-theme($theme);
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
